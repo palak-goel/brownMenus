@@ -20,10 +20,12 @@ def removeTags(listy):
         cleanList.append(re.sub('<\S+>|</\S+>', '', str(item)))
     return cleanList 
 
-print(getToRattyMenu())
+def cleanEscapeCharacters(stringy):
+    return stringy.replace('\\', '')
 
+print cleanEscapeCharacters(str(getToRattyMenu()))
 
-r = requests.get(str(getToRattyMenu()))
+r = requests.get(cleanEscapeCharacters(str(getToRattyMenu())))
 soup = BeautifulSoup(r.content,"html.parser")
 
 '''
