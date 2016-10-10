@@ -1,35 +1,24 @@
 import requests
+import re
 from bs4 import BeautifulSoup
 
-r = requests.get("http://legacy.cafebonappetit.com/weekly-menu/129506")
+def removeTags(listy):
+    cleanList = []
+    for item in listy:
+        cleanList.append(re.sub('<\S+>|</\S+>', '', str(item)))
+    return cleanList 
+
+r = requests.get("http://legacy.cafebonappetit.com/print-menu/cafe/1531/menu/130593/days/today/pgbrks/0/")
 soup = BeautifulSoup(r.content,"html.parser")
 
-'''
-data = soup.find_all('div', class_ = 'menu-item-description')
-item = str(data[0])
-splitOne = item.split('<')
-meal = (splitOne[10].split('>'))[1]
-food = (splitOne[3].split('>'))[1]
+breakfast = soup.find('div', {'class':'fulldaymenu'})
+lunch = breakfast.find('div', {'class':'fulldaymenu'})
+dinner = lunch.find('div', {'class':'fulldaymenu'})
+dinner_items = dinner.find_all('strong')
+lunch_items = filter(lambda x: x not in dinner_items, lunch.find_all('strong'))
+breakfast_items = filter(lambda x: x not in lunch_items and x not in dinner_items, breakfast.find_all('strong'))
 
-#splitTwo = splitOne[3].split('>')
-#print(meal)
-#print(food)
+print removeTags(dinner_items)
+print removeTags(lunch_items)
+print removeTags(breakfast_items)
 
-result = []
-for item in data:
-	item = str(item)
-	splitOne = item.split('<')
-	meal = (splitOne[10].split('>'))[1]
-	food = (splitOne[3].split('>'))[1]
-	result.append(food + ' ' + meal)
-#print (result)
-'''
-
-newDat = soup.find_all('div', id = 'td-12175-1')
-#f = newDat[1]
-print(newDat)
-
-
-
-#a = soup.find_all(id="td-12305-1")
-#print(a)
