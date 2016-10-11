@@ -1,24 +1,40 @@
-import requests
-import re
-from bs4 import BeautifulSoup
+import sqlite3
+from brownFood import *
+import datetime
 
-def removeTags(listy):
-    cleanList = []
-    for item in listy:
-        cleanList.append(re.sub('<\S+>|</\S+>', '', str(item)))
-    return cleanList 
+conn = sqlite3.connect('food.db')
+c = conn.cursor()
 
-r = requests.get("http://legacy.cafebonappetit.com/print-menu/cafe/1531/menu/130593/days/today/pgbrks/0/")
-soup = BeautifulSoup(r.content,"html.parser")
+def create_db():
+    c.execute('CREATE TABLE IF NOT EXISTS FoodByDay(day TEXT PRIMARY KEY, eatery TEXT, meal TEXT, item TEXT)')
 
-breakfast = soup.find('div', {'class':'fulldaymenu'})
-lunch = breakfast.find('div', {'class':'fulldaymenu'})
-dinner = lunch.find('div', {'class':'fulldaymenu'})
-dinner_items = dinner.find_all('strong')
-lunch_items = filter(lambda x: x not in dinner_items, lunch.find_all('strong'))
-breakfast_items = filter(lambda x: x not in lunch_items and x not in dinner_items, breakfast.find_all('strong'))
+def drop_db():
+    c.execute('DROP TABLE IF EXISTS FoodByDay')
 
-print removeTags(dinner_items)
-print removeTags(lunch_items)
-print removeTags(breakfast_items)
+def add_to_db():
+    ratty = get_menu_items('sharpe-refectory')
+    vdub = get_menu_items('verney-woolley')
+    for meal in ratty:
+        if ratty.index(meal) == 0:
+            for item in meal:
+                c.execute('INSERT INTO FoodByDay(day,eatery,meal,item) VALUES (?,?,?,?)', (str(datetime.datetime.now()), 'ratty', 'breakfast', item))
+        elif ratty.index(meal) == 1:
+            for item in meal:
+                c.execute('INSERT INTO FoodByDay(day,eatery,meal,item) VALUES (?,?,?,?)', (str(datetime.datetime.now()), 'ratty', 'lunch', item))
+        else:
+            for item in meal:
+                c.execute('INSERT INTO FoodByDay(day,eatery,meal,item) VALUES (?,?,?,?)', (str(datetime.datetime.now()), 'ratty', 'dinner', item))
+    for meal in vdub:
+        if vdub.index(meal) == 0:
+            for item in meal:
+                c.execute('INSERT INTO FoodByDay(day,eatery,meal,item) VALUES (?,?,?,?)', (str(datetime.datetime.now()), 'vdub', 'breakfast', item))
+        elif vdub.index(meal) == 1:
+            for item in meal:
+                c.execute('INSERT INTO FoodByDay(day,eatery,meal,item) VALUES (?,?,?,?)', (str(datetime.datetime.now()), 'vdub', 'lunch', item))
+        else:
+            for item in meal:
+                c.execute('INSERT INTO FoodByDay(day,eatery,meal,item) VALUES (?,?,?,?)', (str(datetime.datetime.now()), 'vdub', 'dinner', item))
+    conn.commit()
 
+create_db()
+add_to_db()
